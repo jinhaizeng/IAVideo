@@ -14,7 +14,19 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            //选择要添加的对应cpu类型的.so库。,打包编译只会加重一个armeabi-v7a，so库
+            abiFilters 'armeabi-v7a'
+        }
     }
+
+    //应为在libs下配置的需要定位到，如果是在src/main创建jniLibs文件夹就需要下面
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
 
     buildTypes {
         release {
