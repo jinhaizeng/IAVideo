@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         TextView tv = binding.sampleText;
-//        tv.setText(stringFromJNI());
+        tv.setText(stringFromJNI());
         tv.bringToFront();
     }
 
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'iavideo' native library,
      * which is packaged with this application.
      */
-//    public native String stringFromJNI();
+    public native String stringFromJNI();
 
     @Override
     protected void onResume() {
