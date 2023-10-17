@@ -29,6 +29,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".IjkVideoDemoActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ijk_video_player" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
