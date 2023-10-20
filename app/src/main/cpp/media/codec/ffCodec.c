@@ -35,7 +35,7 @@ void avformat_uninit(AVFormatContext **pFormatCtx){
 /**
  * 解码器初始化
  */
-int avcodec_init(AVFormatContext *pFormatCtx, AVCodec **pCodec, AVCodecContext **pCodecCtx) {
+int avcodec_init(AVFormatContext *pFormatCtx, const AVCodec **pCodec, AVCodecContext **pCodecCtx) {
     //获取视频流的索引位置
     //遍历所有类型的流（音频流、视频流、字幕流），找到视频流
     int videoIndex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
@@ -74,7 +74,7 @@ int avcodec_init(AVFormatContext *pFormatCtx, AVCodec **pCodec, AVCodecContext *
 
     //输出视频信息
     LOGI("视频的文件格式：%s", pFormatCtx->iformat->name);
-    LOGI("视频时长：%lld", (pFormatCtx->duration) / 1000000);
+    LOGI("视频时长：%ld", (pFormatCtx->duration) / 1000000);
     LOGI("视频的宽高：%d,%d", (*pCodecCtx)->width, (*pCodecCtx)->height);
     LOGI("解码器的名称：%s", (*pCodec)->name);
     return videoIndex;

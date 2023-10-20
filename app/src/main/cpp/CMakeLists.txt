@@ -3,7 +3,7 @@
 
 # Sets the minimum version of CMake required to build the native library.
 
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.18.1)
 
 # Declares and names the project.
 
@@ -21,7 +21,7 @@ INCLUDE_DIRECTORIES(
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/native-lib.cpp
         ${CMAKE_SOURCE_DIR}/FFMedia.cpp
-        ${CMAKE_SOURCE_DIR}/media/codec/*.cpp
+        ${CMAKE_SOURCE_DIR}/media/codec/*.c
         )
 
 add_library( # Sets the name of the library.
@@ -145,4 +145,4 @@ target_link_libraries( # Specifies the target library.
         android
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib})
+        log)
