@@ -41,20 +41,22 @@ public class IjkVideoDemoActivity extends AppCompatActivity {
                 Environment.getExternalStorageDirectory(),
                 fileName
         ).getAbsolutePath();
-        ijkVideo.setPath(input);
-        try {
-            ijkVideo.load();
-        } catch (IOException e) {
-            Toast.makeText(this,"播放失败",Toast.LENGTH_SHORT);
-            e.printStackTrace();
-        }
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e(Constant.TAG, "askjdh");
-                Toast.makeText(IjkVideoDemoActivity.this,"开始",Toast.LENGTH_SHORT);
-                ijkVideo.start();
-            }
-        });
+//        ijkVideo.setPath(input);
+//        try {
+//            ijkVideo.load();
+//        } catch (IOException e) {
+//            Toast.makeText(this,"播放失败",Toast.LENGTH_SHORT);
+//            e.printStackTrace();
+//        }
+//        tv.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.e(Constant.TAG, "askjdh");
+//                Toast.makeText(IjkVideoDemoActivity.this,"开始",Toast.LENGTH_SHORT);
+//                ijkVideo.start();
+//            }
+//        });
+        IAVideoPlayer iaVideo = binding.iaVideo;
+        iaVideo.start(input);
     }
 }

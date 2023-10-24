@@ -20,7 +20,7 @@ INCLUDE_DIRECTORIES(
 
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/native-lib.cpp
-        ${CMAKE_SOURCE_DIR}/FFMedia.cpp
+        ${CMAKE_SOURCE_DIR}/FFMedia.c
         ${CMAKE_SOURCE_DIR}/media/codec/*.c
         )
 

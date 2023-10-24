@@ -1,6 +1,10 @@
 package ryan.media.iavideo;
 
+import static ryan.utils.Constant.TAG;
+
 import android.os.Environment;
+import android.util.Log;
+import android.view.Surface;
 
 import java.io.File;
 
@@ -20,6 +24,13 @@ public class IAVideoCodec {
         return true;
     }
 
+    public boolean play(String input, Surface surface) {
+        Log.d(TAG, "play input: " + input);
+        _play(input, surface);
+        return true;
+    }
     private native void _init();
     private native void _decodeToMp3(String input, String output);
+
+    private native void _play(String input, Surface surface);
 }

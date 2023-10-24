@@ -17,4 +17,6 @@
 #include <unistd.h>
 #include "LogUtils.h"
 
+void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow);
+
 #endif //IAVIDEO_FFCODEC_H
