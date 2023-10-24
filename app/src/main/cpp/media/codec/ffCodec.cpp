@@ -7,6 +7,7 @@
 /**
  * 解封装器初始化
  */
+
 void avformat_init(AVFormatContext **pFormatCtx, char *input_cstr){
     //封装格式上下文，统领全局的结构体，保存了视频文件封装格式的相关信息
     *pFormatCtx = avformat_alloc_context();
