@@ -2,6 +2,9 @@ package ryan.media.iavideo;
 
 import static ryan.utils.Constant.TAG;
 
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
@@ -9,6 +12,7 @@ import android.view.Surface;
 import java.io.File;
 
 public class IAVideoCodec {
+    private AudioTrack mAudioTrace;
     static {
         System.loadLibrary("iavideo");
     }
@@ -29,8 +33,40 @@ public class IAVideoCodec {
         _play(input, surface);
         return true;
     }
+
+    public boolean decodeAudio(String input) {
+        Log.d(TAG, "decodeAudio input: " + input);
+        _playAudio(input);
+        return true;
+    }
+    public void createTrack(int sampleRateInHz,int nb_channals) {
+        int channaleConfig;//通道数
+        if (nb_channals == 1) {
+            channaleConfig = AudioFormat.CHANNEL_OUT_MONO;
+        } else if (nb_channals == 2) {
+            channaleConfig = AudioFormat.CHANNEL_OUT_STEREO;
+        }else {
+            channaleConfig = AudioFormat.CHANNEL_OUT_MONO;
+        }
+        int buffersize=AudioTrack.getMinBufferSize(sampleRateInHz,
+                channaleConfig, AudioFormat.ENCODING_PCM_16BIT);
+        mAudioTrace = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRateInHz,channaleConfig,
+                AudioFormat.ENCODING_PCM_16BIT,buffersize,AudioTrack.MODE_STREAM);
+        mAudioTrace.play();
+    }
+
+    //C传入音频数据
+    public void playTrack(byte[] buffer, int lenth) {
+        if (mAudioTrace != null && mAudioTrace.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+            mAudioTrace.write(buffer, 0, lenth);
+        }
+    }
+
     private native void _init();
     private native void _decodeToMp3(String input, String output);
 
     private native void _play(String input, Surface surface);
+
+    private native void _playAudio(String input);
+
 }
