@@ -23,7 +23,6 @@ Java_ryan_media_iavideo_IAVideoCodec__1decodeToMp3(JNIEnv *env, jclass jcls, jst
 JNIEXPORT void JNICALL
 Java_ryan_media_iavideo_IAVideoCodec__1play(JNIEnv *env, jobject thiz, jstring input,
                                             jobject surface) {
-    LOGE("%s%p", "1111 env ", env);
     //需要转码的视频文件(输入的视频文件)
     const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
     LOGE("%s%s", "get input source: ", input_cstr);
@@ -32,5 +31,12 @@ Java_ryan_media_iavideo_IAVideoCodec__1play(JNIEnv *env, jobject thiz, jstring i
     LOGE("%s%p", "get nativeWindow: ", nativeWindow);
 
     avcodec_basePlay(input_cstr, nativeWindow);
+    (*env)->ReleaseStringUTFChars(env, input, input_cstr);
+}
+
+JNIEXPORT void JNICALL
+Java_ryan_media_iavideo_IAVideoCodec__1playAudio(JNIEnv *env, jobject thiz, jstring input) {
+    const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
+    avcodec_basePlayAudio(input_cstr, env, thiz);
     (*env)->ReleaseStringUTFChars(env, input, input_cstr);
 }

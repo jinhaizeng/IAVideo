@@ -19,4 +19,5 @@
 
 void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow);
 
+void avcodec_basePlayAudio(const char *input_cstr, JNIEnv *env, jobject instance);
 #endif //IAVIDEO_FFCODEC_H

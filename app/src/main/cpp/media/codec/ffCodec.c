@@ -3,6 +3,7 @@
 //
 
 #include "ffCodec.h"
+#include "libswresample/swresample.h"
 
 /**
  * 解封装器初始化
@@ -91,11 +92,8 @@ void avcodec_uninit(AVCodecContext **pCodecCtx) {
 
 void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow) {
     //封装格式上下文，统领全局的结构体，保存了视频文件封装格式的相关信息
-    LOGE("%s", "1111");
-
     AVFormatContext *pFormatCtx;
     avformat_init(&pFormatCtx, input_cstr);
-    LOGE("%s", "2222");
 
     AVCodec *pCodec;
     AVCodecContext *pCodecCtx;
@@ -199,4 +197,141 @@ void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow) {
 
     avcodec_uninit(&pCodecCtx);
     avformat_uninit(&pFormatCtx);
+}
+
+void avcodec_basePlayAudio(const char *input_cstr, JNIEnv *env, jobject instance) {
+    //封装格式上下文，统领全局的结构体，保存了视频文件封装格式的相关信息
+    AVFormatContext *pFormatCtx;
+    avformat_init(&pFormatCtx, input_cstr);
+
+    AVCodec *pCodec;
+    AVCodecContext *pCodecCtx;
+//    int videoIndex = avcodec_init(pFormatCtx, &pCodec, &pCodecCtx);
+//    if (videoIndex < 0) {
+//        LOGE("%s", "Couldn't find a video stream.");
+//        return;
+//    }
+
+    //获取视频流的索引位置
+    //遍历所有类型的流（音频流、视频流、字幕流），找到音频
+    int audio_stream_idx = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+    if (audio_stream_idx < 0) {
+        LOGE("%s", "Couldn't find a video stream.");
+        return;
+    }
+
+    //只有知道视频的编码方式，才能够根据编码方式去找到解码器
+    //获取视频流中的编解码参数
+    AVCodecParameters *pCodecpar = pFormatCtx->streams[audio_stream_idx]->codecpar;
+    //根据编解码参数的编码id查找对应的解码器
+    pCodec = avcodec_find_decoder(pCodecpar->codec_id);  //寻找合适的解码器
+    if (pCodec == NULL) {
+        LOGE("%s", "找不到解码器\n");
+        return;
+    }
+
+    //根据编码器获取编解码上下文
+    pCodecCtx = avcodec_alloc_context3(pCodec); //为AVCodecContext分配内存
+    if (pCodecCtx == NULL) {
+        LOGE("%s", "Couldn't allocate decoder context.\n");
+        return;
+    }
+
+    //avcodec_parameters_to_context()真正对AVCodecContext执行了内容拷贝
+    if (avcodec_parameters_to_context(pCodecCtx, pCodecpar) < 0) {
+        LOGE("%s", "Couldn't copy decoder context.\n");
+        return;
+    }
+
+    //打开解码器
+    if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
+        LOGE("%s", "解码器无法打开\n");
+        return;
+    }
+
+    //输出视频信息
+    LOGI("视频的文件格式：%s", pFormatCtx->iformat->name);
+    LOGI("视频时长：%ld", (pFormatCtx->duration) / 1000000);
+    LOGI("视频的宽高：%d,%d", (pCodecCtx)->width, (pCodecCtx)->height);
+    LOGI("解码器的名称：%s", (pCodec)->name);
+
+
+    // 准备读取
+    // AVPacket用于存储一帧一帧的压缩数据（H264）
+    // 缓冲区，开辟空间
+    AVPacket *packet = (AVPacket *) av_malloc(sizeof(AVPacket));
+
+    // AVFrame用于存储解码后的像素数据()
+    // 内存分配
+    AVFrame *frame = av_frame_alloc(); //分配一个AVFrame结构体,AVFrame结构体一般用于存储原始数据，指向解码后的原始帧
+
+    //得到SwrContext ，进行重采样，具体参考http://blog.csdn.net/jammg/article/details/52688506
+    SwrContext *swrContext = swr_alloc();
+    //缓存区
+    uint8_t *out_buffer = (uint8_t *) av_malloc(44100 * 2);
+    //输出的声道布局（立体声）
+    uint64_t  out_ch_layout=AV_CH_LAYOUT_STEREO;
+    //输出采样位数  16位
+    enum AVSampleFormat out_formart=AV_SAMPLE_FMT_S16;
+    //输出的采样率必须与输入相同
+    int out_sample_rate = pCodecCtx->sample_rate;
+
+    //swr_alloc_set_opts将PCM源文件的采样格式转换为自己希望的采样格式
+    swr_alloc_set_opts(swrContext, out_ch_layout, out_formart, out_sample_rate,
+                       pCodecCtx->channel_layout, pCodecCtx->sample_fmt, pCodecCtx->sample_rate, 0,
+                       NULL);
+    swr_init(swrContext);
+
+    //    获取通道数  2
+    int out_channer_nb = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
+//    反射得到Class类型
+    jclass david_player = (*env)->GetObjectClass(env, instance);
+//    反射得到createAudio方法
+    jmethodID createAudio = (*env)->GetMethodID(env, david_player, "createTrack", "(II)V");
+//    反射调用createAudio
+    (*env)->CallVoidMethod(env, instance, createAudio, 44100, out_channer_nb);
+    jmethodID audio_write = (*env)->GetMethodID(env, david_player, "playTrack", "([BI)V");
+    int got_frame;
+
+    int got_picture, ret;
+    int frame_count = 0;
+    // 一帧一帧的读取压缩数据
+    while (av_read_frame(pFormatCtx, packet) >= 0) {
+        //只要视频压缩数据（根据流的索引位置判断）
+        if (packet->stream_index == audio_stream_idx) {
+            // 解码一帧视频压缩数据，得到视频像素数据
+            ret = avcodec_send_packet(pCodecCtx, packet);
+            if (ret < 0) {
+                LOGE("%s", "解码错误");
+                return;
+            }
+            got_picture = avcodec_receive_frame(pCodecCtx, frame);
+
+            LOGE("%s%d", "got_picture:", got_picture);
+
+            //为0说明解码完成，非0正在解码
+            if (!got_picture) {
+                LOGE("解码");
+                swr_convert(swrContext, &out_buffer, 44100 * 2, (const uint8_t **) frame->data, frame->nb_samples);
+//                缓冲区的大小
+                int size = av_samples_get_buffer_size(NULL, out_channer_nb, frame->nb_samples,
+                                                      AV_SAMPLE_FMT_S16, 1);
+                jbyteArray audio_sample_array = (*env)->NewByteArray(env, size);
+                (*env)->SetByteArrayRegion(env, audio_sample_array, 0, size, (const jbyte *) out_buffer);
+                (*env)->CallVoidMethod(env, instance, audio_write, audio_sample_array, size);
+                (*env)->DeleteLocalRef(env, audio_sample_array);
+                frame_count++;
+//                LOGI("解码第%d帧, 文件大小%d, frame->linesize: %d, rgb_frame->linesize[0]: %d", frame_count, sizeof(dst), frame->linesize[0], rgb_frame->linesize[0]);
+            }
+        }
+
+        //释放资源
+        av_packet_unref(packet);
+    }
+    av_frame_free(&frame);
+    swr_free(&swrContext);
+    avcodec_close(pCodecCtx);
+    avformat_close_input(&pFormatCtx);
+//    avcodec_uninit(&pCodecCtx);
+//    avformat_uninit(&pFormatCtx);
 }
