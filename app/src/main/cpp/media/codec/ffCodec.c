@@ -129,7 +129,7 @@ void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow) {
                                                 SWS_BICUBIC, NULL, NULL, NULL);
 
     if(nativeWindow==0){
-        LOGE("nativewindow取到失败")
+        LOGE("nativewindow获取失败")
         return;
     }
 

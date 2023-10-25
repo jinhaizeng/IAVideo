@@ -29,6 +29,8 @@ Java_ryan_media_iavideo_IAVideoCodec__1play(JNIEnv *env, jobject thiz, jstring i
     LOGE("%s%s", "get input source: ", input_cstr);
     // 取到nativewindow用于渲染
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
+    LOGE("%s%p", "get nativeWindow: ", nativeWindow);
+
     avcodec_basePlay(input_cstr, nativeWindow);
     (*env)->ReleaseStringUTFChars(env, input, input_cstr);
 }
