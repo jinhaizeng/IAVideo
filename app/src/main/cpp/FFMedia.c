@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 #include <ffCodec.h>
+#include <extractAudio.h>
 #ifdef __cplusplus
 }
 #endif
@@ -35,8 +36,9 @@ Java_ryan_media_iavideo_IAVideoCodec__1play(JNIEnv *env, jobject thiz, jstring i
 }
 
 JNIEXPORT void JNICALL
-Java_ryan_media_iavideo_IAVideoCodec__1playAudio(JNIEnv *env, jobject thiz, jstring input) {
+Java_ryan_media_iavideo_IAVideoCodec__1playAudio(JNIEnv *env, jobject thiz, jstring input, jstring output) {
     const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
-    avcodec_basePlayAudio(input_cstr, env, thiz);
+    const char *output_cstr = (*env)->GetStringUTFChars(env, output, NULL);
+    extractAudio(input_cstr, env, thiz, output_cstr);
     (*env)->ReleaseStringUTFChars(env, input, input_cstr);
 }

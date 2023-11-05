@@ -16,6 +16,9 @@
 #include <android/native_window_jni.h>
 #include <unistd.h>
 #include "LogUtils.h"
+#include "android_log.h"
+
+void avformat_init(AVFormatContext **pFormatCtx, char *input_cstr);
 
 void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow);
 

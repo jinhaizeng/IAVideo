@@ -36,7 +36,15 @@ public class IAVideoCodec {
 
     public boolean decodeAudio(String input) {
         Log.d(TAG, "decodeAudio input: " + input);
-        _playAudio(input);
+        File outputFile = new File("/sdcard/output_audio.aac");
+        if (!outputFile.exists()) {
+            try {
+                outputFile.createNewFile();
+            } catch (Exception e) {
+                Log.d(TAG, "decodeAudio e: " + e);
+            }
+        }
+        _playAudio(input, "/sdcard/output_audio.aac");
         return true;
     }
     public void createTrack(int sampleRateInHz,int nb_channals) {
@@ -67,6 +75,6 @@ public class IAVideoCodec {
 
     private native void _play(String input, Surface surface);
 
-    private native void _playAudio(String input);
+    private native void _playAudio(String input, String output);
 
 }
