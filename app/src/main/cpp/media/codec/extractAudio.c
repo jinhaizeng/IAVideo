@@ -186,7 +186,7 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
                         LOGI("avcodec_receive_packet errorBuf: %s", errorBuf);
                         break;
                     }
-                    audioPacket->stream_index = audioStream->index;
+                    audioPacket->stream_index = 0;
                     LOGI( "avcodec_receive_packet 0000");
                     LOGI( "av_audio_format_context is %d, audioPacket is %d, av_audio_format_context->oformat is %d", av_audio_format_context == NULL, audioPacket == NULL, av_audio_format_context->oformat == NULL);
                     LOGI( "stream is %d", av_audio_format_context->streams[audioPacket->stream_index] == NULL);
