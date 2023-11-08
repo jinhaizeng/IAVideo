@@ -37,6 +37,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="ryan.media.capability.CapabilityListActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="capability_list" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Intent intent = new Intent();
-        intent.setAction("ijk_video_player");
+        intent.setAction("capability_list");
         launcher.launch(intent);
     }
 }
