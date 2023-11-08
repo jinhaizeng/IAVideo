@@ -212,3 +212,113 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
     avcodec_close(pCodecCtx);
     avformat_close_input(&pFormatCtx);
 }
+
+void extractAudioNoDecode(const char *srcPath, const char *dstPath) {
+    int ret;
+    AVFormatContext *in_fmt_ctx = NULL;
+    int audio_index;
+    AVStream *in_stream = NULL;
+    AVCodecParameters *in_codecpar = NULL;
+    AVFormatContext *out_fmt_ctx = NULL;
+    AVOutputFormat *out_fmt = NULL;
+    AVStream *out_stream = NULL;
+    AVPacket pkt;
+
+    //in_fmt_ctx
+    ret = avformat_open_input(&in_fmt_ctx, srcPath, NULL, NULL);
+    if (ret < 0) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "avformat_open_input失败：%s",
+//                            av_err2str(ret));
+        goto end;
+    }
+
+    //audio_index
+    audio_index = av_find_best_stream(in_fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+    if (audio_index < 0) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "查找音频流失败：%s",
+//                            av_err2str(audio_index));
+        goto end;
+    }
+
+    //in_stream、in_codecpar
+    in_stream = in_fmt_ctx->streams[audio_index];
+    in_codecpar = in_stream->codecpar;
+    if (in_codecpar->codec_type != AVMEDIA_TYPE_AUDIO) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "The Codec type is invalid!");
+        goto end;
+    }
+
+    //out_fmt_ctx
+    out_fmt_ctx = avformat_alloc_context();
+    out_fmt = av_guess_format(NULL, dstPath, NULL);
+    out_fmt_ctx->oformat = out_fmt;
+    if (!out_fmt) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "Cloud not guess file format");
+        goto end;
+    }
+
+    //out_stream
+    out_stream = avformat_new_stream(out_fmt_ctx, NULL);
+    if (!out_stream) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to create out stream");
+        goto end;
+    }
+
+    //拷贝编解码器参数
+    ret = avcodec_parameters_copy(out_stream->codecpar, in_codecpar);
+    if (ret < 0) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "avcodec_parameters_copy：%s",
+//                            av_err2str(ret));
+        goto end;
+    }
+    out_stream->codecpar->codec_tag = 0;
+
+
+    //创建并初始化目标文件的AVIOContext
+    if ((ret = avio_open(&out_fmt_ctx->pb, dstPath, AVIO_FLAG_WRITE)) < 0) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "avio_open：%s",
+//                            av_err2str(ret));
+        goto end;
+    }
+
+    //initialize packet
+    av_init_packet(&pkt);
+    pkt.data = NULL;
+    pkt.size = 0;
+
+    //写文件头
+    if ((ret = avformat_write_header(out_fmt_ctx, NULL)) < 0) {
+//        __android_log_print(ANDROID_LOG_ERROR, TAG, "avformat_write_header：%s",
+//                            av_err2str(ret));
+        goto end;
+    }
+
+    while (av_read_frame(in_fmt_ctx, &pkt) == 0) {
+        if (pkt.stream_index == audio_index) {
+            //输入流和输出流的时间基可能不同，因此要根据时间基的不同对时间戳pts进行转换
+            pkt.pts = av_rescale_q(pkt.pts, in_stream->time_base, out_stream->time_base);
+            pkt.dts = pkt.pts;
+            //根据时间基转换duration
+            pkt.duration = av_rescale_q(pkt.duration, in_stream->time_base, out_stream->time_base);
+            pkt.pos = -1;
+            pkt.stream_index = 0;
+
+            //写入
+            av_interleaved_write_frame(out_fmt_ctx, &pkt);
+
+            //释放packet
+            av_packet_unref(&pkt);
+        }
+    }
+
+    //写文件尾
+    av_write_trailer(out_fmt_ctx);
+
+    //释放资源
+    end:
+    if (in_fmt_ctx) avformat_close_input(&in_fmt_ctx);
+    if (out_fmt_ctx) {
+        if (out_fmt_ctx->pb) avio_close(out_fmt_ctx->pb);
+        avformat_free_context(out_fmt_ctx);
+    }
+}

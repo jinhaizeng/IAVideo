@@ -34,7 +34,7 @@ public class CapabilityAdapter extends RecyclerView.Adapter<CapabilityAdapter.Ca
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 Intent intent = new Intent();
-                intent.setAction("ijk_video_player");
+                intent.setAction(item.mActivityName);
                 v.getContext().startActivity(intent);
                 return false;
             }

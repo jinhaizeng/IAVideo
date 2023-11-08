@@ -45,6 +45,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="ryan.utils.OpenAlbumActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="open_album" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

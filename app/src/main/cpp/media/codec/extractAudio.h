@@ -21,4 +21,5 @@
 #include "LogUtils.h"
 
 void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const char *output_cstr);
+void extractAudioNoDecode(const char *srcPath, const char *dstPath);
 #endif //IAVIDEO_EXTRACTAUDIO_H
