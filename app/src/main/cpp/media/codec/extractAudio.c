@@ -131,6 +131,7 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
 
     LOGI("编码器 codec_id=%d, audio codec_i=%d", pCodecCtx->codec_id, audioCodecContext->codec_id);
 
+    avcodec_parameters_from_context(audioStream->codecpar, audioCodecContext);
     // 打开编码器
     encodeResult = avcodec_open2(audioCodecContext, audioCodec, NULL);
     if(encodeResult < 0) {
