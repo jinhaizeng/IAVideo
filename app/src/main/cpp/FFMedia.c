@@ -39,7 +39,7 @@ JNIEXPORT void JNICALL
 Java_ryan_media_iavideo_IAVideoCodec__1playAudio(JNIEnv *env, jobject thiz, jstring input, jstring output) {
     const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
     const char *output_cstr = (*env)->GetStringUTFChars(env, output, NULL);
-//    extractAudio(input_cstr, env, thiz, output_cstr);
-    extractAudioNoDecode(input_cstr, output_cstr);
+    extractAudio(input_cstr, env, thiz, output_cstr);
+//    extractAudioNoDecode(input_cstr, output_cstr);
     (*env)->ReleaseStringUTFChars(env, input, input_cstr);
 }

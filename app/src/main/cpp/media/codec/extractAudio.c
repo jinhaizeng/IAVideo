@@ -102,12 +102,7 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
         LOGI("编码器 avio_open ret=%d", encodeResult);
         return;
     }
-    // 创建音频流AVStream
-    audioStream = avformat_new_stream(av_audio_format_context, NULL);
-    if(audioStream == NULL) {
-        LOGI("编码器 audioStream is null");
-        return;
-    }
+
     // 确定文件输出格式，TODO确认oformat是什么时候赋值
     AVOutputFormat *audiOutputFormat = av_audio_format_context->oformat;
     AVCodec *audioCodec = avcodec_find_encoder(audiOutputFormat->audio_codec);
@@ -126,6 +121,13 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
     audioCodecContext->channel_layout = pCodecCtx->channel_layout;
     audioCodecContext->channels = pCodecCtx->channels;
     audioCodecContext->bit_rate = pCodecCtx->bit_rate;
+
+    // 创建音频流AVStream
+    audioStream = avformat_new_stream(av_audio_format_context, audioCodec);
+    if(audioStream == NULL) {
+        LOGI("编码器 audioStream is null");
+        return;
+    }
 
     LOGI("编码器 codec_id=%d, audio codec_i=%d", pCodecCtx->codec_id, audioCodecContext->codec_id);
 
@@ -147,6 +149,7 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
     int frame_count = 0;
     // 不初始化直接会挂的
     AVPacket *audioPacket = av_packet_alloc();
+    int audioCnt = 0;
     // 一帧一帧的读取压缩数据
     while (av_read_frame(pFormatCtx, packet) >= 0) {
         LOGI("编码器 222");
@@ -186,10 +189,14 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
                         LOGI("avcodec_receive_packet errorBuf: %s", errorBuf);
                         break;
                     }
+//                    audioPacket->pts = audioCnt;
+//                    audioPacket->dts = audioCnt;
+//                    audioCnt++;
                     audioPacket->stream_index = 0;
                     LOGI( "avcodec_receive_packet 0000");
                     LOGI( "av_audio_format_context is %d, audioPacket is %d, av_audio_format_context->oformat is %d", av_audio_format_context == NULL, audioPacket == NULL, av_audio_format_context->oformat == NULL);
                     LOGI( "stream is %d", av_audio_format_context->streams[audioPacket->stream_index] == NULL);
+                    LOGI("av_audio_format_context->oformat->name: %s", av_audio_format_context->oformat->name);
                     av_audio_format_context->debug = 1;
                     av_interleaved_write_frame(av_audio_format_context, audioPacket);
                     LOGI( "avcodec_receive_packet 1111");

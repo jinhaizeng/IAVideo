@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class OpenAlbumActivity extends AppCompatActivity {
     String filePath;
+    //TODO 确认下这个this::写法的原因
     ActivityResultLauncher launcher = registerForActivityResult(new ActivityResultContracts.GetContent(), this::handleResult);
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
