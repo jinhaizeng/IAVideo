@@ -23,4 +23,6 @@ void avformat_init(AVFormatContext **pFormatCtx, char *input_cstr);
 void avcodec_basePlay(const char *input_cstr, ANativeWindow *nativeWindow);
 
 void avcodec_basePlayAudio(const char *input_cstr, JNIEnv *env, jobject instance);
+
+void avcodec_getMediainfo(const char *input_cstr);
 #endif //IAVIDEO_FFCODEC_H

@@ -326,3 +326,25 @@ void avcodec_basePlayAudio(const char *input_cstr, JNIEnv *env, jobject instance
     avcodec_close(pCodecCtx);
     avformat_close_input(&pFormatCtx);
 }
+
+void avcodec_getMediainfo(const char *input_cstr) {
+    AVFormatContext *pFormatCtx;
+    pFormatCtx = avformat_alloc_context();
+    //打开输入视频文件
+    const int openResult = avformat_open_input(&pFormatCtx, input_cstr, NULL, NULL);
+    if (openResult != 0) {
+        LOGE("%s%s%d", "无法打开输入视频文件", input_cstr, openResult);
+        return;
+    }
+
+    //获取视频文件信息
+    if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
+        LOGE("%s", "无法获取视频文件信息");
+        return;
+    }
+    //输出视频信息
+    LOGI("文件格式：%s", pFormatCtx->iformat->name);
+    LOGI("文件时长：%ld", (pFormatCtx->duration) / 1000000);
+    LOGI("文件码流：%ld", pFormatCtx->bit_rate);
+    avformat_close_input(&pFormatCtx);
+}

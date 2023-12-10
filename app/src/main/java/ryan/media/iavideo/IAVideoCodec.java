@@ -70,6 +70,10 @@ public class IAVideoCodec {
         }
     }
 
+    public void getMediaInfo(String input) {
+        _getMediaInfo(input);
+    }
+
     private native void _init();
     private native void _decodeToMp3(String input, String output);
 
@@ -77,4 +81,5 @@ public class IAVideoCodec {
 
     private native void _playAudio(String input, String output);
 
+    private native void _getMediaInfo(String input);
 }
