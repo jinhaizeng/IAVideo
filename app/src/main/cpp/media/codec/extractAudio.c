@@ -131,9 +131,11 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
 
     LOGI("编码器 codec_id=%d, audio codec_i=%d", pCodecCtx->codec_id, audioCodecContext->codec_id);
 
-    avcodec_parameters_from_context(audioStream->codecpar, audioCodecContext);
     // 打开编码器
     encodeResult = avcodec_open2(audioCodecContext, audioCodec, NULL);
+
+    avcodec_parameters_from_context(audioStream->codecpar, audioCodecContext);
+`
     if(encodeResult < 0) {
         LOGI("编码器 avcodec_open2 ret=%d", encodeResult);
         char errorBuf[AV_ERROR_MAX_STRING_SIZE];
@@ -215,6 +217,7 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
     LOGI( "success, frame_count: %d", frame_count);
 
     av_write_trailer(av_audio_format_context);
+    avio_close(av_audio_format_context->pb);
     av_frame_free(&frame);
     swr_free(&swrContext);
     avcodec_close(pCodecCtx);
