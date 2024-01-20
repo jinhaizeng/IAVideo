@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 
-import ryan.media.iavideo.IAVideoCodec;
+import ryan.media.iavideo.IAVideoPlayer;
 
 public class GetMediaInfoActivity extends AppCompatActivity {
     @Override
@@ -25,7 +25,7 @@ public class GetMediaInfoActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                IAVideoCodec codec =new IAVideoCodec();
+                IAVideoPlayer codec =new IAVideoPlayer();
                 String fileName = "output_audio.aac";
                 String input = new File(
                         Environment.getExternalStorageDirectory(),

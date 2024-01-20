@@ -12,18 +12,18 @@ extern "C" {
 #endif
 
 JNIEXPORT void JNICALL
-Java_ryan_media_iavideo_IAVideoCodec__1init(JNIEnv *env, jobject thiz) {
+Java_ryan_media_iavideo_IAVideoPlayer__1init(JNIEnv *env, jobject thiz) {
 // TODO: implement init()
 }
 
 JNIEXPORT void JNICALL
-Java_ryan_media_iavideo_IAVideoCodec__1decodeToMp3(JNIEnv *env, jclass jcls, jstring input_jstr, jstring output_jstr) {
+Java_ryan_media_iavideo_IAVideoPlayer__1decodeToMp3(JNIEnv *env, jclass jcls, jstring input_jstr, jstring output_jstr) {
     // TODO: implement _decodeToMp3()
 
 }
 JNIEXPORT void JNICALL
-Java_ryan_media_iavideo_IAVideoCodec__1play(JNIEnv *env, jobject thiz, jstring input,
-                                            jobject surface) {
+Java_ryan_media_iavideo_IAVideoPlayer__1play(JNIEnv *env, jobject thiz, jstring input,
+                                             jobject surface) {
     //需要转码的视频文件(输入的视频文件)
     const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
     LOGE("%s%s", "get input source: ", input_cstr);
@@ -36,7 +36,7 @@ Java_ryan_media_iavideo_IAVideoCodec__1play(JNIEnv *env, jobject thiz, jstring i
 }
 
 JNIEXPORT void JNICALL
-Java_ryan_media_iavideo_IAVideoCodec__1playAudio(JNIEnv *env, jobject thiz, jstring input, jstring output) {
+Java_ryan_media_iavideo_IAVideoPlayer__1playAudio(JNIEnv *env, jobject thiz, jstring input, jstring output) {
     const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
     const char *output_cstr = (*env)->GetStringUTFChars(env, output, NULL);
     extractAudio(input_cstr, env, thiz, output_cstr);
@@ -45,7 +45,7 @@ Java_ryan_media_iavideo_IAVideoCodec__1playAudio(JNIEnv *env, jobject thiz, jstr
 }
 
 JNIEXPORT void JNICALL
-Java_ryan_media_iavideo_IAVideoCodec__1getMediaInfo(JNIEnv *env, jobject thiz, jstring input) {
+Java_ryan_media_iavideo_IAVideoPlayer__1getMediaInfo(JNIEnv *env, jobject thiz, jstring input) {
     const char *input_cstr = (*env)->GetStringUTFChars(env, input, NULL);
     avcodec_getMediainfo(input_cstr);
     (*env)->ReleaseStringUTFChars(env, input, input_cstr);

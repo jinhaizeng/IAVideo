@@ -16,13 +16,17 @@ project("iavideo")
 
 INCLUDE_DIRECTORIES(
         ${CMAKE_SOURCE_DIR}/util
-        ${CMAKE_SOURCE_DIR}/media/codec)
+        ${CMAKE_SOURCE_DIR}/media/codec
+        ${CMAKE_SOURCE_DIR}/media/player
+        ${CMAKE_SOURCE_DIR}/jni)
 
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/native-lib.cpp
         ${CMAKE_SOURCE_DIR}/FFMedia.c
+        ${CMAKE_SOURCE_DIR}/IAVideoPlayer_jni.cpp
         ${CMAKE_SOURCE_DIR}/media/codec/*.c
-        )
+        ${CMAKE_SOURCE_DIR}/media/player/*.cpp
+        ${CMAKE_SOURCE_DIR}/jni/*.cpp)
 
 add_library( # Sets the name of the library.
         iavideo

@@ -20,7 +20,7 @@
         android:id="@+id/ijk_video"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-    <ryan.media.iavideo.IAVideoPlayer
+    <ryan.media.iavideo.IAVideoView
         android:id="@+id/ia_video"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

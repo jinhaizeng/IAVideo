@@ -1,18 +1,14 @@
 package ryan.media.iavideo;
 
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import ryan.media.iavideo.databinding.IjkVideoDemoBinding;
-import ryan.utils.Constant;
 import ryan.utils.FileUtils;
 import ryan.utils.PermissionUtil;
 
@@ -59,8 +55,8 @@ public class IjkVideoDemoActivity extends AppCompatActivity {
 //                ijkVideo.start();
 //            }
 //        });
-        IAVideoPlayer iaVideo = binding.iaVideo;
-        iaVideo.start(getCacheDir().getAbsolutePath() + "sintel.mp4");
+        IAVideoView iaVideo = binding.iaVideo;
+        iaVideo.start(getCacheDir().getAbsolutePath() + "/sintel.mp4");
     }
 
     private void copyToSdcardFromAssets() {

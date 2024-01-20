@@ -2,97 +2,108 @@ package ryan.media.iavideo;
 
 import static ryan.utils.Constant.TAG;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.util.AttributeSet;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.os.Environment;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.FrameLayout;
+import android.view.Surface;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import java.io.File;
 
-public class IAVideoPlayer extends FrameLayout {
-    private Context mContext;
-    private SurfaceView mSurfaceView;
-
-    public IAVideoPlayer(@NonNull Context context) {
-        super(context);
+public class IAVideoPlayer {
+    private AudioTrack mAudioTrace;
+    // 存放cpp层播放器对象地址
+    private long mNativeMediaPlayer;
+    static {
+        System.loadLibrary("iavideo");
     }
 
-    public IAVideoPlayer(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+    public IAVideoPlayer() {
+        _native_init();
     }
 
-    public IAVideoPlayer(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context);
+    public boolean decodeToMp3() {
+        String path = "/sdcard/DCIM/Camera";
+        String fileName = "DCIM/Camera/share_f032ca40160c3d22598faf07728e8f51.mp4";
+        String input = new File(
+                Environment.getExternalStorageDirectory(),
+                fileName
+        ).getAbsolutePath();
+        return true;
     }
 
-    private void init(Context context) {
-        mContext = context;
-        setBackgroundColor(Color.BLACK);
-        createSurfaceView();
+    public boolean play(String input, Surface surface) {
+        Log.d(TAG, "play input: " + input);
+        _setMediaPath(input);
+        _play(input, surface);
+        return true;
     }
 
-    private void createSurfaceView() {
-        mSurfaceView = new SurfaceView(mContext);
-        mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder surfaceHolder) {
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Thread.currentThread().sleep(3); //快速实现功能：延迟三秒播放
-//                        } catch (InterruptedException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                        IAVideoCodec codec =new IAVideoCodec();
-//                        Log.d(TAG, "surface: " + mSurfaceView.getHolder().getSurface());
-//                        String path = "/sdcard/DCIM/Camera";
-//                        String fileName = "DCIM/Camera/share_f032ca40160c3d22598faf07728e8f51.mp4";
-//                        String input = new File(
-//                                Environment.getExternalStorageDirectory(),
-//                                fileName
-//                        ).getAbsolutePath();
-//                        codec.play("/data/user/0/ryan.media.iavideo/cache/sintel.mp4", surfaceHolder.getSurface());
-////                        codec.decodeAudio(input);
-//                    }
-//                }).start();
+    public boolean decodeAudio(String input) {
+        Log.d(TAG, "decodeAudio input: " + input);
+        File outputFile = new File("/sdcard/output_audio.aac");
+        if (!outputFile.exists()) {
+            try {
+                outputFile.createNewFile();
+            } catch (Exception e) {
+                Log.d(TAG, "decodeAudio e: " + e);
             }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
-            }
-        });
-        LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT
-                , LayoutParams.MATCH_PARENT, Gravity.CENTER);
-        addView(mSurfaceView,0,layoutParams);
+        }
+        _playAudio(input, "/sdcard/output_audio.aac");
+        return true;
     }
 
-    public void start(String path) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.currentThread().sleep(300); //快速实现功能：延迟三秒播放
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                IAVideoCodec codec =new IAVideoCodec();
-                Log.d(TAG, "surface: " + mSurfaceView.getHolder().getSurface());
-                codec.play("/data/user/0/ryan.media.iavideo/cache/sintel.mp4", mSurfaceView.getHolder().getSurface());
-//                        codec.decodeAudio(input);
-            }
-        }).start();
+    public void setMediaPath(String path) {
+        _setMediaPath(path);
     }
+
+    public void setSurface(Surface surface) {
+        _setSurface(surface);
+    }
+
+    public void prepare() {
+        _prepare();
+    }
+
+    public void createTrack(int sampleRateInHz,int nb_channals) {
+        int channaleConfig;//通道数
+        if (nb_channals == 1) {
+            channaleConfig = AudioFormat.CHANNEL_OUT_MONO;
+        } else if (nb_channals == 2) {
+            channaleConfig = AudioFormat.CHANNEL_OUT_STEREO;
+        }else {
+            channaleConfig = AudioFormat.CHANNEL_OUT_MONO;
+        }
+        int buffersize=AudioTrack.getMinBufferSize(sampleRateInHz,
+                channaleConfig, AudioFormat.ENCODING_PCM_16BIT);
+        mAudioTrace = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRateInHz,channaleConfig,
+                AudioFormat.ENCODING_PCM_16BIT,buffersize,AudioTrack.MODE_STREAM);
+        mAudioTrace.play();
+    }
+
+    //C传入音频数据
+    public void playTrack(byte[] buffer, int lenth) {
+        if (mAudioTrace != null && mAudioTrace.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+            mAudioTrace.write(buffer, 0, lenth);
+        }
+    }
+
+    public void getMediaInfo(String input) {
+        _getMediaInfo(input);
+    }
+
+    private native void _init();
+    private native void _decodeToMp3(String input, String output);
+
+    private native void _play(String input, Surface surface);
+
+    private native void _playAudio(String input, String output);
+
+    private native void _getMediaInfo(String input);
+
+    private native void _native_init();
+    private native void _setMediaPath(String path);
+    private native void _setSurface(Surface surface);
+    private native void _prepare();
 }
