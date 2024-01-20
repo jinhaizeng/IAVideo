@@ -1,5 +1,6 @@
 package ryan.utils;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -9,6 +10,14 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
 public final class FileUtils {
 
@@ -104,4 +113,38 @@ public final class FileUtils {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
+    /**
+     *
+     * @param inputStream：输入文件流，比如
+     * @return
+     */
+    public static File copyFile(InputStream inputStream, String outFilePath, String outFileName) {
+        if (inputStream == null || TextUtils.isEmpty(outFilePath)) return null;
+        FileOutputStream fileOutputStream = null;
+        try {
+            // 将asset中的文件复制到sd卡中
+            File file = new File(outFilePath, outFileName);
+            if (file.exists()) {
+                file.delete();
+            }
+            fileOutputStream = new FileOutputStream(file);
+            byte[] buffer = new byte[8192];
+            int byteCount;
+            while ((byteCount = inputStream.read(buffer)) != -1) {
+                fileOutputStream.write(buffer, 0, byteCount);
+            }
+            fileOutputStream.flush();
+
+            return file;
+        } catch (Exception e) {
+            Log.e(Constant.TAG, e.toString());
+            return null;
+        } finally {
+            try {
+                if (fileOutputStream != null) fileOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

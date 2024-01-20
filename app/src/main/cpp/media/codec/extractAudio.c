@@ -135,7 +135,7 @@ void extractAudio(const char *input_cstr, JNIEnv *env, jobject instance, const c
     encodeResult = avcodec_open2(audioCodecContext, audioCodec, NULL);
 
     avcodec_parameters_from_context(audioStream->codecpar, audioCodecContext);
-`
+
     if(encodeResult < 0) {
         LOGI("编码器 avcodec_open2 ret=%d", encodeResult);
         char errorBuf[AV_ERROR_MAX_STRING_SIZE];

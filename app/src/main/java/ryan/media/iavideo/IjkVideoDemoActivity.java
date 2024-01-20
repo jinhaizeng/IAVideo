@@ -3,17 +3,17 @@ package ryan.media.iavideo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import ryan.media.iavideo.databinding.IjkVideoDemoBinding;
 import ryan.utils.Constant;
+import ryan.utils.FileUtils;
 import ryan.utils.PermissionUtil;
 
 public class IjkVideoDemoActivity extends AppCompatActivity {
@@ -23,7 +23,6 @@ public class IjkVideoDemoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         PermissionUtil.requestMyPermissions(this);
 
         binding = IjkVideoDemoBinding.inflate(getLayoutInflater());
@@ -34,13 +33,17 @@ public class IjkVideoDemoActivity extends AppCompatActivity {
         tv.bringToFront();
 
         VideoPlayer ijkVideo = binding.ijkVideo;
+        copyToSdcardFromAssets();
+
 //        ijkVideo.setVideoListener(this);
-        String path = "/sdcard/DCIM/Camera";
-        String fileName = "DCIM/Camera/share_f032ca40160c3d22598faf07728e8f51.mp4";
-        String input = new File(
-                Environment.getExternalStorageDirectory(),
-                fileName
-        ).getAbsolutePath();
+
+//        String path = "/sdcard/DCIM/Camera";
+//        String fileName = "DCIM/Camera/share_f032ca40160c3d22598faf07728e8f51.mp4";
+//        String input = new File(
+//                Environment.getExternalStorageDirectory(),
+//                fileName
+//        ).getAbsolutePath();
+
 //        ijkVideo.setPath(input);
 //        try {
 //            ijkVideo.load();
@@ -57,6 +60,16 @@ public class IjkVideoDemoActivity extends AppCompatActivity {
 //            }
 //        });
         IAVideoPlayer iaVideo = binding.iaVideo;
-        iaVideo.start(input);
+        iaVideo.start(getCacheDir().getAbsolutePath() + "sintel.mp4");
+    }
+
+    private void copyToSdcardFromAssets() {
+        String fileName = "sintel.mp4";
+        try {
+            InputStream inputStream = getAssets().open(fileName);
+            FileUtils.copyFile(inputStream, getCacheDir().getAbsolutePath(), fileName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

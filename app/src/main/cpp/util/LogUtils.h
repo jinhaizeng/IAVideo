@@ -7,6 +7,6 @@
 #include <jni.h>
 #include <android/log.h>
 
-#define LOGI(FORMAT, ...) __android_log_print(ANDROID_LOG_INFO,"ryan_test",FORMAT,##__VA_ARGS__);
-#define LOGE(FORMAT, ...) __android_log_print(ANDROID_LOG_ERROR,"ryan_test",FORMAT,##__VA_ARGS__);
+#define LOGI(FORMAT, ...) __android_log_print(ANDROID_LOG_INFO,"IAVideo_cpp_log",FORMAT,##__VA_ARGS__);
+#define LOGE(FORMAT, ...) __android_log_print(ANDROID_LOG_ERROR,"IAVideo_cpp_log",FORMAT,##__VA_ARGS__);
 #endif //IAVIDEO_LOGUTILS_H

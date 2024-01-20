@@ -11,7 +11,7 @@
 static int use_log_report = 0;
 
 
-#define FF_LOG_TAG     "FFmpeg_VideoEditor"
+#define FF_LOG_TAG     "IAVideo_cpp_log"
 
 
 #define FF_LOG_UNKNOWN        ANDROID_LOG_UNKNOWN

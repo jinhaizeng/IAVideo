@@ -22,6 +22,7 @@ public class CapabilityListActivity extends Activity {
         mCapabilityRecycleView.setLayoutManager(new LinearLayoutManager(this));
         ArrayList<Capability> dataList = new ArrayList<>();
         dataList.add(new Capability("选择视频源", "open_album"));
+        dataList.add(new Capability("播放视频", "ijk_video_player"));
         dataList.add(new Capability("提取音频", "ijk_video_player"));
         dataList.add(new Capability("获取文件信息", "get_media_info"));
         dataList.add(new Capability("敬请期待", ""));
