@@ -25,6 +25,131 @@ extern "C"   //按照C语言方式编译api接口
 
 using namespace std;
 
+typedef struct PacketListEntry {
+    struct PacketListEntry *next;
+    AVPacket pkt;
+} PacketListEntry;
+
+typedef struct PacketList {
+    PacketListEntry *head, *tail;
+} PacketList;
+
+typedef struct FFFormatContext {
+    /**
+     * The public context.
+     */
+    AVFormatContext pub;
+
+    /**
+     * Number of streams relevant for interleaving.
+     * Muxing only.
+     */
+    int nb_interleaved_streams;
+
+    /**
+     * The interleavement function in use. Always set for muxers.
+     */
+    int (*interleave_packet)(struct AVFormatContext *s, AVPacket *pkt,
+                             int flush, int has_packet);
+
+    /**
+     * This buffer is only needed when packets were already buffered but
+     * not decoded, for example to get the codec parameters in MPEG
+     * streams.
+     */
+    PacketList packet_buffer;
+
+    /* av_seek_frame() support */
+    int64_t data_offset; /**< offset of the first packet */
+
+    /**
+     * Raw packets from the demuxer, prior to parsing and decoding.
+     * This buffer is used for buffering packets until the codec can
+     * be identified, as parsing cannot be done without knowing the
+     * codec.
+     */
+    PacketList raw_packet_buffer;
+    /**
+     * Packets split by the parser get queued here.
+     */
+    PacketList parse_queue;
+    /**
+     * The generic code uses this as a temporary packet
+     * to parse packets or for muxing, especially flushing.
+     * For demuxers, it may also be used for other means
+     * for short periods that are guaranteed not to overlap
+     * with calls to av_read_frame() (or ff_read_packet())
+     * or with each other.
+     * It may be used by demuxers as a replacement for
+     * stack packets (unless they call one of the aforementioned
+     * functions with their own AVFormatContext).
+     * Every user has to ensure that this packet is blank
+     * after using it.
+     */
+    AVPacket *parse_pkt;
+
+    /**
+     * Used to hold temporary packets for the generic demuxing code.
+     * When muxing, it may be used by muxers to hold packets (even
+     * permanent ones).
+     */
+    AVPacket *pkt;
+    /**
+     * Sum of the size of packets in raw_packet_buffer, in bytes.
+     */
+    int raw_packet_buffer_size;
+
+    /**
+     * Offset to remap timestamps to be non-negative.
+     * Expressed in timebase units.
+     * @see AVStream.mux_ts_offset
+     */
+    int64_t offset;
+
+    /**
+     * Timebase for the timestamp offset.
+     */
+    AVRational offset_timebase;
+
+#if FF_API_COMPUTE_PKT_FIELDS2
+    int missing_ts_warning;
+#endif
+
+    int inject_global_side_data;
+
+    int avoid_negative_ts_use_pts;
+
+    /**
+     * Timestamp of the end of the shortest stream.
+     */
+    int64_t shortest_end;
+
+    /**
+     * Whether or not avformat_init_output has already been called
+     */
+    int initialized;
+
+    /**
+     * Whether or not avformat_init_output fully initialized streams
+     */
+    int streams_initialized;
+
+    /**
+     * ID3v2 tag useful for MP3 demuxing
+     */
+    AVDictionary *id3v2_meta;
+
+    /*
+     * Prefer the codec framerate for avg_frame_rate computation.
+     */
+    int prefer_codec_framerate;
+
+    /**
+     * Set if chapter ids are strictly monotonic.
+     */
+    int chapter_ids_monotonic;
+} FFFormatContext;
+
 class IAVideoPlayer {
 private:
     char *mediaPath = NULL;
@@ -127,6 +252,8 @@ public:
     }
 
     int prepare() {
+        av_log_set_callback(ffp_log_callback_report);
+        av_log_set_level(AV_LOG_DEBUG);
         //封装格式上下文，统领全局的结构体，保存了视频文件封装格式的相关信息
         avformat_init(&pFormatCtx, mediaPath);
 
@@ -170,7 +297,14 @@ public:
         int got_picture, ret;
         int frame_count = 0;
         // 一帧一帧的读取压缩数据
+        pFormatCtx->debug = FF_FDEBUG_TS;
+        packet->flags = AV_PKT_FLAG_CORRUPT;
         while (av_read_frame(pFormatCtx, packet) >= 0) {
+            const int genpts = pFormatCtx->flags & AVFMT_FLAG_GENPTS;
+            FFFormatContext *const si = (FFFormatContext*)pFormatCtx;
+
+            LOGE("genpts: %d, %d, %d, %d", genpts, si->packet_buffer.head, si->raw_packet_buffer.head, pFormatCtx->iformat->read_packet == NULL);
+
             //只要视频压缩数据（根据流的索引位置判断）
             if (packet->stream_index == videoIndex) {
                 // 解码一帧视频压缩数据，得到视频像素数据
@@ -222,6 +356,7 @@ public:
 
             //释放资源
             av_packet_unref(packet);
+            packet->flags = AV_PKT_FLAG_CORRUPT;
         }
 
         ANativeWindow_release(nativeWindow);
